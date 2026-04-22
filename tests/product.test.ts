@@ -19,8 +19,11 @@ describe('Phase 6: Product Pipeline', () => {
     const resume = { rawText: 'I code in Go', skills: ['Go'] };
     
     const prompt = Parser.buildPrompt(jd, resume);
-    expect(prompt).toContain('[BOS] JOB: Engineer');
-    expect(prompt).toContain('[SEP] RESUME: I code in Go [SEP]');
+    expect(prompt).toContain('ACT AS: Executive Resume Writer.');
+    expect(prompt).toContain('JOB: Engineer');
+    expect(prompt).toContain(`[SEP] RESUME:
+I code in Go
+[SEP]`);
   });
 
   it('3. Formatter injects score and cleans tags', () => {

@@ -5,30 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HireMe.ai | ATS Optimizer</title>
   <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-container">
     <header class="app-header">
-      <h1>HireMe.ai</h1>
-      <p>Autonomous ATS Resume Optimization</p>
+      <h1>HireMe.ai <span class="accent">|</span> <span class="lead">Lead Architect: Ambrish Nigam</span></h1>
     </header>
 
     <main class="split-layout">
       <!-- LEFT PANE: Inputs -->
       <section class="pane input-pane">
+        
         <div class="input-group">
           <label for="job-description">Job Description</label>
+          <div class="file-drop-zone" id="jd-drop-zone">
+            <span class="drop-text">Drag & Drop .txt or paste below</span>
+            <input type="file" id="jd-file" accept=".txt" class="file-input">
+          </div>
           <textarea id="job-description" placeholder="Paste the target job description here..."></textarea>
         </div>
         
         <div class="input-group">
           <label for="current-resume">Current Resume</label>
+          <div class="file-drop-zone" id="resume-drop-zone">
+            <span class="drop-text">Drag & Drop .txt or paste below</span>
+            <input type="file" id="resume-file" accept=".txt" class="file-input">
+          </div>
           <textarea id="current-resume" placeholder="Paste your raw, unformatted resume here..."></textarea>
         </div>
 
         <button id="optimize-btn" class="primary-btn">
-          <span class="btn-text">Optimize Resume</span>
+          <span class="btn-text">OPTIMIZE RESUME</span>
           <span class="loader hidden"></span>
         </button>
         
@@ -51,11 +59,15 @@
         
         <div id="empty-state" class="empty-state">
           <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <p>Ready to optimize.</p>
+          <p class="empty-title">Ready to optimize.</p>
           <p class="subtext">Awaiting input data.</p>
         </div>
       </section>
     </main>
+
+    <footer class="app-footer">
+      <p>Architected by Ambrish Nigam | Senior AI Product Lead | 2026</p>
+    </footer>
   </div>
   <script src="app.js"></script>
 </body>

@@ -12,12 +12,14 @@
   "dependencies": {
     "@mni-ml/framework": "latest",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "multer": "^2.1.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^29.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^20.0.0",
     "eslint": "^8.0.0",
     "jest": "^29.0.0",

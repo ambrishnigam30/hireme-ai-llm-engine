@@ -8,15 +8,27 @@ export class Optimizer {
   public static scoreATS(jd: JobDescription, resume: Resume): number {
     if (jd.skills.length === 0) return 0;
     
-    const jdSkills = new Set(jd.skills.map(s => s.toLowerCase()));
-    const resumeSkills = new Set(resume.skills.map(s => s.toLowerCase()));
+    const STOP_WORDS = new Set(['a', 'the', 'in', 'with', 'and', 'or', 'for', 'to', 'of', 'this', 'that', 'is', 'are']);
+    
+    // Normalize resume text for fuzzy matching
+    const normalizedResume = resume.rawText.toLowerCase();
     
     let matches = 0;
-    for (const skill of jdSkills) {
-      if (resumeSkills.has(skill)) matches++;
+    let validSkills = 0;
+
+    for (const skill of jd.skills) {
+      const lowerSkill = skill.toLowerCase();
+      if (STOP_WORDS.has(lowerSkill) || lowerSkill.length <= 2) continue;
+      
+      validSkills++;
+      // Fuzzy match: check if the exact skill word appears in the normalized resume text
+      if (normalizedResume.includes(lowerSkill)) {
+        matches++;
+      }
     }
     
-    return Math.round((matches / jdSkills.size) * 100);
+    if (validSkills === 0) return 0;
+    return Math.round((matches / validSkills) * 100);
   }
 
   public static optimizeResume(jd: JobDescription, resume: Resume, generator: Generator): string {
