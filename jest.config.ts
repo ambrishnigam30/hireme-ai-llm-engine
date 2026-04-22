@@ -6,4 +6,10 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
+  moduleNameMapper: {
+    '^@mni-ml/framework$': '<rootDir>/node_modules/@mni-ml/framework/dist/index.js'
+  },
+  transformIgnorePatterns: [
+    "node_modules/(?!@mni-ml/framework)"
+  ]
 };
