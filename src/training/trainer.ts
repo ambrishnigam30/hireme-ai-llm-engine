@@ -24,12 +24,10 @@ export class Trainer {
 
   public trainEpoch(): number {
     this.model.train?.();
-    this.trainLoader.reset();
     let totalLoss = 0;
     let batches = 0;
 
-    let batch = this.trainLoader.nextBatch();
-    while (batch !== null) {
+    for (const batch of this.trainLoader) {
       this.optimizer.zeroGrad();
 
       const inputIds = Tensor.fromFloat32(new Float32Array(batch.inputIds.flat()), [batch.inputIds.length, batch.inputIds[0].length]);
@@ -48,8 +46,6 @@ export class Trainer {
       if (typeof loss.dispose === 'function') loss.dispose();
       if (typeof inputIds.dispose === 'function') inputIds.dispose();
       if (typeof targetIds.dispose === 'function') targetIds.dispose();
-
-      batch = this.trainLoader.nextBatch();
     }
 
     return batches > 0 ? totalLoss / batches : 0;
@@ -57,12 +53,10 @@ export class Trainer {
 
   public evaluate(): number {
     this.model.eval?.();
-    this.valLoader.reset();
     let totalLoss = 0;
     let batches = 0;
 
-    let batch = this.valLoader.nextBatch();
-    while (batch !== null) {
+    for (const batch of this.valLoader) {
       const inputIds = Tensor.fromFloat32(new Float32Array(batch.inputIds.flat()), [batch.inputIds.length, batch.inputIds[0].length]);
       const targetIds = Tensor.fromFloat32(new Float32Array(batch.targetIds.flat()), [batch.targetIds.length, batch.targetIds[0].length]);
       
@@ -76,8 +70,6 @@ export class Trainer {
       if (typeof loss.dispose === 'function') loss.dispose();
       if (typeof inputIds.dispose === 'function') inputIds.dispose();
       if (typeof targetIds.dispose === 'function') targetIds.dispose();
-
-      batch = this.valLoader.nextBatch();
     }
 
     return batches > 0 ? totalLoss / batches : 0;

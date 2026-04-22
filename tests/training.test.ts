@@ -99,7 +99,7 @@ describe('Phase 4: Training Loop', () => {
     llm.registerParameter('test', dummyParam);
 
     const mockTrainData = [{ inputIds: [1, 2], targetIds: [3, 4] }];
-    const trainLoader = new DataLoader(mockTrainData, 1, 2);
+    const trainLoader = new DataLoader(mockTrainData, 1);
     
     const optimizer = new OptimizerWithClipping(llm, 0.01, 1.0);
     const trainer = new Trainer(llm, trainLoader, trainLoader, optimizer, 1);
@@ -124,7 +124,7 @@ describe('Phase 4: Training Loop', () => {
   it('3. Evaluate loop prevents memory leaks without updating params', () => {
     const llm = new LLM(MODEL_CONFIG);
     const mockValData = [{ inputIds: [1], targetIds: [2] }];
-    const valLoader = new DataLoader(mockValData, 1, 1);
+    const valLoader = new DataLoader(mockValData, 1);
     
     const optimizer = new OptimizerWithClipping(llm, 0.01, 1.0);
     const trainer = new Trainer(llm, valLoader, valLoader, optimizer, 1);

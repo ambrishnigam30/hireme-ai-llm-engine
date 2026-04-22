@@ -24,8 +24,8 @@ async function main() {
     targetIds: new Array(128).fill((i + 21) % 8000)
   }));
 
-  const trainLoader = new DataLoader(mockTrainData, 4, 128);
-  const valLoader = new DataLoader(mockValData, 4, 128);
+  const trainLoader = new DataLoader(mockTrainData, 4, 0);
+  const valLoader = new DataLoader(mockValData, 4, 0);
 
   const optimizer = new OptimizerWithClipping(model, 3e-4, 1.0);
   

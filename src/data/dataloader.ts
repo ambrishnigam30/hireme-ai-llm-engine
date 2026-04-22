@@ -1,8 +1,7 @@
 /**
- * dataloader.ts
- * Manages dataset batching, shuffling, and padding.
+ * @file src/data/dataloader.ts
+ * @description Batch loading and dynamic padding for the training dataset.
  */
-import { PAD_ID } from '../tokenizer/vocabulary';
 
 export interface Batch {
   inputIds: number[][];
@@ -11,65 +10,51 @@ export interface Batch {
 }
 
 export class DataLoader {
-  private data: { inputIds: number[], targetIds: number[] }[];
+  private data: { inputIds: number[]; targetIds: number[] }[];
   private batchSize: number;
-  private maxLen: number;
-  private currentIndex: number;
+  private padTokenId: number;
 
-  constructor(data: { inputIds: number[], targetIds: number[] }[], batchSize: number, maxLen: number) {
-    this.data = [...data];
+  constructor(
+    data: { inputIds: number[]; targetIds: number[] }[],
+    batchSize: number,
+    padTokenId: number = 0
+  ) {
+    this.data = data;
     this.batchSize = batchSize;
-    this.maxLen = maxLen;
-    this.currentIndex = 0;
+    this.padTokenId = padTokenId;
   }
 
-  /**
-   * Shuffles the dataset randomly.
-   */
-  public shuffle(): void {
-    for (let i = this.data.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [this.data[i], this.data[j]] = [this.data[j], this.data[i]];
-    }
-  }
-
-  /**
-   * Resets the iterator.
-   */
-  public reset(): void {
-    this.currentIndex = 0;
-  }
-
-  /**
-   * Returns the next batch of data or null if the epoch is finished.
-   */
-  public nextBatch(): Batch | null {
-    if (this.currentIndex >= this.data.length) {
-      return null;
-    }
-
-    const end = Math.min(this.currentIndex + this.batchSize, this.data.length);
-    const batchData = this.data.slice(this.currentIndex, end);
-    this.currentIndex = end;
-
-    const inputIds: number[][] = [];
-    const targetIds: number[][] = [];
-    const attentionMask: number[][] = [];
-
-    for (const item of batchData) {
-      const padLenInput = Math.max(0, this.maxLen - item.inputIds.length);
-      const paddedInput = [...item.inputIds, ...new Array(padLenInput).fill(PAD_ID)];
+  *[Symbol.iterator](): IterableIterator<Batch> {
+    for (let i = 0; i < this.data.length; i += this.batchSize) {
+      const batchItems = this.data.slice(i, i + this.batchSize);
       
-      const padLenTarget = Math.max(0, this.maxLen - item.targetIds.length);
-      const paddedTarget = [...item.targetIds, ...new Array(padLenTarget).fill(PAD_ID)];
+      // Find the maximum sequence lengths in THIS specific batch
+      const maxInputLen = Math.max(...batchItems.map(item => item.inputIds.length));
+      const maxTargetLen = Math.max(...batchItems.map(item => item.targetIds.length));
 
-      const mask = paddedInput.map(id => id === PAD_ID ? 0 : 1);
+      const inputIds: number[][] = [];
+      const targetIds: number[][] = [];
+      const attentionMask: number[][] = [];
 
-      inputIds.push(paddedInput);
-      targetIds.push(paddedTarget);
-      attentionMask.push(mask);
+      for (const item of batchItems) {
+        // Calculate padding counts
+        const inputPadCount = maxInputLen - item.inputIds.length;
+        const targetPadCount = maxTargetLen - item.targetIds.length;
+
+        // Pad inputs with PAD_TOKEN_ID
+        inputIds.push([...item.inputIds, ...Array(inputPadCount).fill(this.padTokenId)]);
+        
+        // Pad targets with PAD_TOKEN_ID
+        targetIds.push([...item.targetIds, ...Array(targetPadCount).fill(this.padTokenId)]);
+
+        // Generate attention mask: 1 for real tokens, 0 for padded gaps
+        attentionMask.push([
+          ...Array(item.inputIds.length).fill(1),
+          ...Array(inputPadCount).fill(0)
+        ]);
+      }
+
+      yield { inputIds, targetIds, attentionMask };
     }
-
-    return { inputIds, targetIds, attentionMask };
   }
 }

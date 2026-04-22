@@ -60,11 +60,9 @@ describe('Phase 2: Dataset Pipeline', () => {
 
     it('should yield correctly sized batches', () => {
       const batchSize = 2;
-      const loader = new DataLoader(mockData, batchSize, 4); // Use maxLen 4
+      const loader = new DataLoader(mockData, batchSize, PAD_TOKEN_ID);
       
-      const batches: any[] = [];
-      let b = loader.nextBatch();
-      while (b) { batches.push(b); b = loader.nextBatch(); }
+      const batches = Array.from(loader);
       
       // We have 3 items, batch size 2 -> should result in 2 batches
       expect(batches.length).toBe(2);
@@ -74,9 +72,10 @@ describe('Phase 2: Dataset Pipeline', () => {
 
     it('should pad sequences to the longest sequence in the batch', () => {
       const batchSize = 2;
-      const loader = new DataLoader(mockData, batchSize, 4); // Use maxLen 4
+      const loader = new DataLoader(mockData, batchSize, PAD_TOKEN_ID);
       
-      const firstBatch: any = loader.nextBatch();
+      const batches = Array.from(loader);
+      const firstBatch: any = batches[0];
       
       // Longest input in first batch is 4 tokens. Second input is 3 tokens.
       // Second input should be padded with PAD_TOKEN_ID (0)
@@ -90,9 +89,10 @@ describe('Phase 2: Dataset Pipeline', () => {
 
     it('should generate accurate attention masks (1 for real tokens, 0 for padding)', () => {
       const batchSize = 2;
-      const loader = new DataLoader(mockData, batchSize, 4); // Use maxLen 4
+      const loader = new DataLoader(mockData, batchSize, PAD_TOKEN_ID);
       
-      const firstBatch: any = loader.nextBatch();
+      const batches = Array.from(loader);
+      const firstBatch: any = batches[0];
 
       // First input: length 4 (no padding needed)
       expect(firstBatch.attentionMask[0]).toEqual([1, 1, 1, 1]);
