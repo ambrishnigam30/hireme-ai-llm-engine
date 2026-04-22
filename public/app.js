@@ -55,10 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDropZone(resumeDropZone, resumeFile, 'current-resume');
 
   optimizeBtn.addEventListener('click', async () => {
-    const jd = jdInput.value.trim();
-    const resume = resumeInput.value.trim();
+    const jdText = document.getElementById("job-description").value;
+    const resumeText = document.getElementById("current-resume").value;
 
-    if (!jd || !resume) {
+    if (!jdText || !resumeText) {
+      alert("Please paste both JD and Resume");
       showError("Please provide both a Job Description and a Current Resume.");
       return;
     }
@@ -66,23 +67,44 @@ document.addEventListener('DOMContentLoaded', () => {
     setLoadingState(true);
     hideError();
 
-    const formData = new FormData();
-    formData.append('jobDescription', jd);
-    formData.append('resume', resume);
-
     try {
-      const response = await fetch('/api/optimize', {
+      const response = await fetch('http://localhost:3000/api/optimize', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          jobDescription: document.getElementById("job-description").value, 
+          resume: document.getElementById("current-resume").value 
+        })
       });
 
       const data = await response.json();
+      console.log("RAW_DATA_RECEIVED:", data);
+      
+      const staticOutputElement = document.getElementById("optimized-output");
+      if (staticOutputElement) {
+        staticOutputElement.innerText = data.output || "Mapping Error - Check Console";
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Optimization failed due to internal server error.');
       }
 
-      displayResults(data.score, data.skills || [], data.optimizedText);
+      const finalScore = Number(data.score || 0);
+      
+      // Update UI explicitly just in case animation is delayed
+      document.getElementById("ats-score").innerText = finalScore + "%";
+      
+      // Note: We trigger animateScore AFTER the text generation inside displayResults
+      const outputText = data.output || data.text || "";
+      if (!outputText || outputText.trim().length === 0) {
+        console.error("No output received");
+        showError("Generation failed: No output received from the engine.");
+        setLoadingState(false);
+        return;
+      }
+      displayResults(finalScore, outputText);
 
     } catch (err) {
       showError(err.message);
@@ -97,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnText.classList.add('hidden');
       loader.classList.remove('hidden');
       optimizeBtn.classList.add('loading');
-      emptyState.classList.remove('hidden');
+      emptyState.classList.add('hidden'); // Hide the placeholder immediately
       scoreContainer.classList.add('hidden');
       outputGroup.classList.add('hidden');
     } else {
@@ -139,34 +161,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 30);
   }
 
-  function displayResults(score, skills, text) {
+  function displayResults(finalScore, text) {
+    const outputText = text || "";
+    if (!outputText) {
+      console.error("No output received");
+      showError("Generation failed: No output received from the engine.");
+      return;
+    }
+
     emptyState.classList.add('hidden');
     outputGroup.classList.remove('hidden');
 
-    const textWithoutScoreHeader = text.split('OPTIMIZED RESUME:')[1]?.trim() || text;
+    const textWithoutScoreHeader = outputText.split('OPTIMIZED RESUME:')[1]?.trim() || outputText;
 
-    // Thinking... status effect
-    optimizedOutput.innerHTML = `<em>Thinking... Identifying High Value Keywords: <span style="color:var(--primary-color)">${skills.slice(0, 5).join(', ')}${skills.length > 5 ? '...' : ''}</span></em><br><br>`;
-    
-    // Typewriter streaming effect after a brief thinking pause
-    setTimeout(() => {
-      optimizedOutput.textContent = '';
-      let i = 0;
-      const interval = setInterval(() => {
-        optimizedOutput.textContent += textWithoutScoreHeader.charAt(i);
-        i++;
-        if (i >= textWithoutScoreHeader.length) {
-          clearInterval(interval);
-          
-          // Render markdown cleanly after streaming raw text
-          if (typeof marked !== 'undefined') {
-            optimizedOutput.innerHTML = marked.parse(textWithoutScoreHeader);
-          }
-          
-          // Trigger the score animation ONLY AFTER full text is generated
-          animateScore(score);
-        }
-      }, 5); // Stream text slightly faster
-    }, 1500); // 1.5 second "thinking" pause
+    // Disabled typewriter effect to prove text renders statically
+    optimizedOutput.innerHTML = '';
+    if (typeof marked !== 'undefined') {
+      optimizedOutput.innerHTML = marked.parse(textWithoutScoreHeader);
+    } else {
+      optimizedOutput.innerText = textWithoutScoreHeader;
+    }
+    animateScore(finalScore);
   }
 });

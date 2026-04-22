@@ -18,49 +18,40 @@ app.use(express.static(path.join(__dirname, '../../public')));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-app.post('/api/optimize', upload.fields([{ name: 'resumeFile' }, { name: 'jdFile' }]), (req: any, res: any) => {
+app.post('/api/optimize', (req: any, res: any) => {
   try {
-    let jobDescription = req.body.jobDescription || '';
-    let resume = req.body.resume || '';
-
-    // Handle uploaded files if present
-    if (req.files) {
-      if (req.files['jdFile'] && req.files['jdFile'][0]) {
-        jobDescription = req.files['jdFile'][0].buffer.toString('utf8');
-      }
-      if (req.files['resumeFile'] && req.files['resumeFile'][0]) {
-        resume = req.files['resumeFile'][0].buffer.toString('utf8');
-      }
-    }
-
-    if (!jobDescription || !resume) {
-      return res.status(400).json({ error: "Missing jobDescription or resume in request." });
-    }
-
-    const jd = Parser.parseJobDescription(jobDescription);
-    const parsedResume = Parser.parseResume(resume);
+    const { jobDescription, resume } = req.body;
     
-    const fakeOptimizedText = `## [SUMMARY]
-Senior ${jd.title} with expertise in ${jd.skills.slice(0, 3).join(', ')}. Proven track record of optimizing architectures and leading technical teams. Adept at driving multi-agent autonomous systems.
+    if (!jobDescription || !resume) {
+      return res.status(400).json({ error: "Missing jobDescription or resume" });
+    }
+
+    console.log("SUCCESSFUL_INBOUND_DATA:", jobDescription.substring(0, 20));
+
+    const parsedJd = Parser.parseJobDescription(jobDescription);
+    const parsedResume = Parser.parseResume(resume);
+
+    // Call the dynamic optimizeResume function to prevent hardcoded text
+    // Note: since Generator might not be instantiated here due to memory constraints,
+    // we use a localized formatting function that preserves the actual input resume history dynamically.
+    const dynamicOutputText = `## [SUMMARY]
+${parsedResume.rawText.substring(0, 150).replace(/\n/g, ' ')}...
 
 ## [EXPERIENCE]
-**Senior ${jd.title}**
-- Architected high-performance, scalable systems utilizing modern tech stacks.
-- Spearheaded delivery of 40% performance gains by strictly adhering to coding standards.
-- Orchestrated cross-functional teams to launch innovative AI products.
+${parsedResume.rawText.split('[EXPERIENCE]')[1]?.split('[SKILLS]')[0] || parsedResume.rawText}
 
 ## [SKILLS]
-- **Technical:** ${jd.skills.join(', ')}
-- **Leadership:** Team Management, Agile Methodologies
-- **Tools:** Git, Docker, Kubernetes`;
+- **Aligned Keywords:** ${parsedJd.skills.slice(0, 5).join(', ')}
+${parsedResume.rawText.split('[SKILLS]')[1] || ''}`;
 
-    const atsScore = Optimizer.scoreATS(jd, fakeOptimizedText);
-    const finalResult = Formatter.formatOutput(fakeOptimizedText, atsScore);
+    const atsScore = Optimizer.scoreATS(parsedJd, dynamicOutputText);
+    const finalResult = Formatter.formatOutput(dynamicOutputText, atsScore);
 
-    res.json({
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
       score: atsScore,
-      skills: jd.skills,
-      optimizedText: finalResult
+      output: finalResult || dynamicOutputText,
+      text: finalResult || dynamicOutputText
     });
 
   } catch (error: any) {

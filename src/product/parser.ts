@@ -32,14 +32,15 @@ export class Parser {
   }
 
   public static buildPrompt(jd: JobDescription, resume: Resume): string {
-    return `SYSTEM: You are a Professional Resume Transformer.
-DATA_INPUT: ${resume.rawText}
-TARGET_JD: ${jd.title} ${jd.skills.join(', ')}
+    return `ACT AS: Senior Executive Resume Architect.
+SOURCE_DATA: ${resume.rawText}
+TARGET_ALIGNMENT: ${jd.title} ${jd.skills.join(', ')}
 
-INSTRUCTION:
-1. Extract every Job Title, Company, and Date from DATA_INPUT.
-2. For each role, rewrite the bullet points to align with keywords found in TARGET_JD.
-3. Maintain the 1:1 structure of DATA_INPUT.
-4. DO NOT use pre-defined templates or examples. Every word must be derived from the relationship between the DATA_INPUT and TARGET_JD.`;
+STRICT CONSTRAINTS (CRITICAL):
+- IDENTITY LOCK: Use the Job Titles from SOURCE_DATA exactly as written. Never prepend 'Senior' or JD titles to existing roles. 
+- 1:1 MAPPING: For every job entry in SOURCE_DATA, there must be a corresponding entry in the output. No omissions. No additions.
+- GENERATIVE BOUNDARY: Only optimize the internal bullet points to align with TARGET_ALIGNMENT. 
+- STRUCTURE: Strictly use [SUMMARY], [EXPERIENCE], and [SKILLS] headers.
+- FALLBACK: If you cannot optimize or generation fails, return the SOURCE_DATA as is. Do NOT return an empty string.`;
   }
 }
