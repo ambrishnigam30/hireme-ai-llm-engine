@@ -116,22 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
     errorBanner.classList.add('hidden');
   }
 
-  function displayResults(score, skills, text) {
-    emptyState.classList.add('hidden');
-    scoreContainer.classList.remove('hidden');
-    outputGroup.classList.remove('hidden');
-
-    const textWithoutScoreHeader = text.split('OPTIMIZED RESUME:')[1]?.trim() || text;
-
-    // Thinking... status effect
-    optimizedOutput.innerHTML = `<em>Thinking... Identifying High Value Keywords: <span style="color:var(--primary-color)">${skills.slice(0, 5).join(', ')}${skills.length > 5 ? '...' : ''}</span></em><br><br>`;
-    
-    // Animate score from 0 to target
+  function animateScore(score) {
     let currentScore = 0;
     atsScoreEl.textContent = '0';
     const ring = document.querySelector('.score-ring');
     ring.style.borderColor = ring.style.color = '#4d4d4d'; // initial grey
     
+    scoreContainer.classList.remove('hidden');
+
     const scoreInterval = setInterval(() => {
       if (currentScore >= score) {
         clearInterval(scoreInterval);
@@ -145,7 +137,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentScore > score) currentScore = score;
       atsScoreEl.textContent = currentScore;
     }, 30);
+  }
 
+  function displayResults(score, skills, text) {
+    emptyState.classList.add('hidden');
+    outputGroup.classList.remove('hidden');
+
+    const textWithoutScoreHeader = text.split('OPTIMIZED RESUME:')[1]?.trim() || text;
+
+    // Thinking... status effect
+    optimizedOutput.innerHTML = `<em>Thinking... Identifying High Value Keywords: <span style="color:var(--primary-color)">${skills.slice(0, 5).join(', ')}${skills.length > 5 ? '...' : ''}</span></em><br><br>`;
+    
     // Typewriter streaming effect after a brief thinking pause
     setTimeout(() => {
       optimizedOutput.textContent = '';
@@ -153,8 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const interval = setInterval(() => {
         optimizedOutput.textContent += textWithoutScoreHeader.charAt(i);
         i++;
-        if (i >= textWithoutScoreHeader.length) clearInterval(interval);
-      }, 10);
+        if (i >= textWithoutScoreHeader.length) {
+          clearInterval(interval);
+          
+          // Render markdown cleanly after streaming raw text
+          if (typeof marked !== 'undefined') {
+            optimizedOutput.innerHTML = marked.parse(textWithoutScoreHeader);
+          }
+          
+          // Trigger the score animation ONLY AFTER full text is generated
+          animateScore(score);
+        }
+      }, 5); // Stream text slightly faster
     }, 1500); // 1.5 second "thinking" pause
   }
 });

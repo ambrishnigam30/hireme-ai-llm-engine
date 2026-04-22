@@ -9,9 +9,10 @@ import { Tensor } from '@mni-ml/framework';
 import { EOS_ID } from '../tokenizer/vocabulary';
 
 export interface GenerationConfig {
-  maxNewTokens: number;
+  max_tokens: number;
   temperature: number;
   topK?: number;
+  top_p?: number;
 }
 
 export class Generator {
@@ -25,14 +26,21 @@ export class Generator {
     this.kvcache = new KVCache();
   }
 
-  public generate(prompt: string, config: GenerationConfig): string {
+  public generate(prompt: string, config: Partial<GenerationConfig> = {}): string {
+    const finalConfig: GenerationConfig = {
+      max_tokens: config.max_tokens ?? 1024,
+      temperature: config.temperature ?? 0.7,
+      topK: config.topK,
+      top_p: config.top_p ?? 0.9
+    };
+
     this.model.eval?.();
     let tokenIds = this.tokenizer.encode(prompt);
     
     if (tokenIds.length === 0) return "";
 
     try {
-      for (let step = 0; step < config.maxNewTokens; step++) {
+      for (let step = 0; step < finalConfig.max_tokens; step++) {
         if (tokenIds.length >= 512) break;
 
         const inputIds = Tensor.fromFloat32(new Float32Array(tokenIds), [1, tokenIds.length]);
@@ -44,12 +52,13 @@ export class Generator {
         }
 
         let nextTokenId: number;
-        if (config.temperature === 0) {
+        if (finalConfig.temperature === 0) {
           nextTokenId = Sampler.greedy(lastTokenLogits);
         } else {
-          const scaled = Sampler.temperature(lastTokenLogits, config.temperature);
+          const scaled = Sampler.temperature(lastTokenLogits, finalConfig.temperature);
           let probs = Sampler.softmax(scaled);
-          if (config.topK) probs = Sampler.topK(probs, config.topK);
+          if (finalConfig.topK) probs = Sampler.topK(probs, finalConfig.topK);
+          if (finalConfig.top_p) probs = Sampler.topP(probs, finalConfig.top_p);
           
           const sumProbs = probs.reduce((a, b) => a + b, 0);
           if (sumProbs > 0) {

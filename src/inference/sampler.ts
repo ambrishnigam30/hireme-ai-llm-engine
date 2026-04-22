@@ -35,6 +35,18 @@ export class Sampler {
     }
     return result;
   }
+
+  public static topP(probs: number[], p: number): number[] {
+    const indexedProbs = probs.map((prob, i) => ({ prob, i })).sort((a, b) => b.prob - a.prob);
+    const result = new Array(probs.length).fill(0);
+    let cumulative = 0.0;
+    for (const item of indexedProbs) {
+      result[item.i] = item.prob;
+      cumulative += item.prob;
+      if (cumulative > p) break;
+    }
+    return result;
+  }
   
   public static sample(probs: number[]): number {
     const r = Math.random();

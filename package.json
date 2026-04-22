@@ -13,7 +13,8 @@
     "@mni-ml/framework": "latest",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "performance-now": "^2.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

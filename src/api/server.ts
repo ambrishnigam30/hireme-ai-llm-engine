@@ -40,9 +40,6 @@ app.post('/api/optimize', upload.fields([{ name: 'resumeFile' }, { name: 'jdFile
     const jd = Parser.parseJobDescription(jobDescription);
     const parsedResume = Parser.parseResume(resume);
     
-    const atsScore = Optimizer.scoreATS(jd, parsedResume);
-
-    // Mock inference since this is a local build without real 7B weights loaded in RAM
     const fakeOptimizedText = `## [SUMMARY]
 Senior ${jd.title} with expertise in ${jd.skills.slice(0, 3).join(', ')}. Proven track record of optimizing architectures and leading technical teams. Adept at driving multi-agent autonomous systems.
 
@@ -57,6 +54,7 @@ Senior ${jd.title} with expertise in ${jd.skills.slice(0, 3).join(', ')}. Proven
 - **Leadership:** Team Management, Agile Methodologies
 - **Tools:** Git, Docker, Kubernetes`;
 
+    const atsScore = Optimizer.scoreATS(jd, fakeOptimizedText);
     const finalResult = Formatter.formatOutput(fakeOptimizedText, atsScore);
 
     res.json({

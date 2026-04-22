@@ -8,67 +8,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <header class="app-header" style="height: 100px; padding: 20px 40px; margin: 0;">
+    <h1>HireMe.ai</h1>
+    <p class="lead">Lead Architect: Ambrish Nigam</p>
+  </header>
+
   <div class="app-container">
-    <header class="app-header">
-      <h1>HireMe.ai <span class="accent">|</span> <span class="lead">Lead Architect: Ambrish Nigam</span></h1>
-    </header>
-
-    <main class="split-layout">
-      <!-- LEFT PANE: Inputs -->
-      <section class="pane input-pane">
-        
-        <div class="input-group">
-          <label for="job-description">Job Description</label>
-          <div class="file-drop-zone" id="jd-drop-zone">
-            <span class="drop-text">Drag & Drop .txt or paste below</span>
-            <input type="file" id="jd-file" accept=".txt" class="file-input">
-          </div>
-          <textarea id="job-description" placeholder="Paste the target job description here..."></textarea>
+    <div class="input-pane">
+      <div class="input-group">
+        <label for="job-description">Job Description</label>
+        <div class="file-drop-zone" id="jd-drop-zone">
+          <span class="drop-text">Drag & Drop .txt</span>
+          <input type="file" id="jd-file" accept=".txt" class="file-input">
         </div>
-        
-        <div class="input-group">
-          <label for="current-resume">Current Resume</label>
-          <div class="file-drop-zone" id="resume-drop-zone">
-            <span class="drop-text">Drag & Drop .txt or paste below</span>
-            <input type="file" id="resume-file" accept=".txt" class="file-input">
-          </div>
-          <textarea id="current-resume" placeholder="Paste your raw, unformatted resume here..."></textarea>
+        <textarea id="job-description" placeholder="Paste the target job description here..."></textarea>
+      </div>
+      
+      <div class="input-group">
+        <label for="current-resume">Current Resume</label>
+        <div class="file-drop-zone" id="resume-drop-zone">
+          <span class="drop-text">Drag & Drop .txt</span>
+          <input type="file" id="resume-file" accept=".txt" class="file-input">
         </div>
+        <textarea id="current-resume" placeholder="Paste your raw, unformatted resume here..."></textarea>
+      </div>
 
-        <button id="optimize-btn" class="primary-btn">
-          <span class="btn-text">OPTIMIZE RESUME</span>
-          <span class="loader hidden"></span>
-        </button>
-        
-        <div id="error-message" class="error-banner hidden"></div>
-      </section>
+      <div style="flex: 1;"></div>
+      
+      <div id="error-message" class="error-banner hidden"></div>
+      
+      <button id="optimize-btn" class="primary-btn" style="margin-top: 24px;">
+        <span class="btn-text">OPTIMIZE RESUME</span>
+        <span class="loader hidden"></span>
+      </button>
+      
+      <footer class="app-footer">
+        <p>Architected by Ambrish Nigam | Senior AI Product Lead | 2026</p>
+      </footer>
+    </div>
 
-      <!-- RIGHT PANE: Outputs -->
-      <section class="pane output-pane">
-        <div class="score-container hidden" id="score-container">
-          <div class="score-ring">
-            <span id="ats-score">0</span><span class="percent">%</span>
-          </div>
-          <p>ATS Match Score</p>
+    <div class="output-pane">
+      <div class="score-container hidden" id="score-container">
+        <div class="score-ring">
+          <span id="ats-score">0</span><span class="percent">%</span>
         </div>
+        <p>ATS Match Score</p>
+      </div>
 
-        <div class="output-group hidden" id="output-group">
-          <label>Optimized Resume</label>
-          <div id="optimized-output" class="output-text"></div>
-        </div>
-        
-        <div id="empty-state" class="empty-state">
-          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <p class="empty-title">Ready to optimize.</p>
-          <p class="subtext">Awaiting input data.</p>
-        </div>
-      </section>
-    </main>
-
-    <footer class="app-footer">
-      <p>Architected by Ambrish Nigam | Senior AI Product Lead | 2026</p>
-    </footer>
+      <div class="output-group hidden" id="output-group">
+        <label>Optimized Resume</label>
+        <div id="optimized-output" class="output-text"></div>
+      </div>
+      
+      <div id="empty-state" class="empty-state">
+        <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <p class="empty-title">Ready to optimize.</p>
+        <p class="subtext">Awaiting input data.</p>
+      </div>
+    </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
