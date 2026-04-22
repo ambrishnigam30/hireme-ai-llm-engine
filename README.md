@@ -26,7 +26,7 @@ Integrates a native $n$-gram keyword intersection algorithm to provide real-time
 Verified performance metrics following a cold-start inference on consumer-grade hardware.
 
 <p align="center">
-  <img src="./performance_metrics.jpg" width="100%" alt="HireMe.ai Performance Visualization" />
+  <img src="./performance_metrics.jpg.png" width="100%" alt="HireMe.ai Performance Visualization" />
 </p>
 
 *Figure 1: 46% net lift in semantic ATS alignment and 0.97 F1 Entity Preservation.*
