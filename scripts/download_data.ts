@@ -10,8 +10,7 @@ async function main() {
   const dataDir = path.join(__dirname, '..', 'data');
 
   const datasetsToDownload = [
-    'MikePfunk28/resume-training-dataset',
-    'cnamuangtoun/resume-job-description-fit',
+    'datasetmaster/resumes',
     'jacob-hugging-face/job-descriptions',
     '0xnbk/resume-ats-score-v1-en'
   ];

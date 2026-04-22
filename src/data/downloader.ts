@@ -1,23 +1,17 @@
 /**
  * downloader.ts
- * Uses a Python subprocess to download HuggingFace datasets.
+ * Uses a Python subprocess to download HuggingFace datasets, with a Node HTTP fallback.
  */
 import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 
 export class Downloader {
-  /**
-   * Downloads a HuggingFace dataset and saves it as a JSONL file.
-   * @param datasetId HuggingFace dataset ID (e.g. 'MikePfunk28/resume-training-dataset')
-   * @param outputDir Directory to save the dataset
-   * @returns Path to the downloaded JSONL file
-   */
   public async downloadDataset(datasetId: string, outputDir: string): Promise<string> {
     const safeName = datasetId.replace(/\//g, '_');
     const outputPath = path.join(outputDir, `${safeName}.jsonl`);
 
-    if (fs.existsSync(outputPath)) {
+    if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
       console.log(`Dataset ${datasetId} already exists at ${outputPath}`);
       return outputPath;
     }
@@ -53,28 +47,77 @@ except Exception as e:
     fs.writeFileSync(scriptPath, pythonScript, 'utf-8');
 
     return new Promise((resolve, reject) => {
-      console.log(`Downloading dataset ${datasetId}... This may take a while.`);
+      console.log(`Downloading dataset ${datasetId} via Python...`);
       const pythonProcess = spawn('python', [scriptPath, datasetId, outputPath]);
 
       pythonProcess.stdout.on('data', (data) => {
         console.log(`[Python] ${data.toString().trim()}`);
       });
 
+      let pyError = '';
       pythonProcess.stderr.on('data', (data) => {
-        console.error(`[Python Error] ${data.toString().trim()}`);
+        pyError += data.toString();
       });
 
-      pythonProcess.on('close', (code) => {
-        if (fs.existsSync(scriptPath)) {
-          fs.unlinkSync(scriptPath);
-        }
+      pythonProcess.on('close', async (code) => {
+        if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
         
-        if (code === 0) {
+        if (code === 0 && fs.existsSync(outputPath) && fs.statSync(outputPath).size > 0) {
           resolve(outputPath);
         } else {
-          reject(new Error(`Python subprocess exited with code ${code}`));
+          console.warn(`Python failed (code ${code}). Error: ${pyError.trim()}`);
+          console.warn(`Falling back to Node HTTP HF Datasets API for ${datasetId}...`);
+          try {
+            await this.downloadDatasetHttp(datasetId, outputPath);
+            resolve(outputPath);
+          } catch (httpErr) {
+            reject(new Error(`Both Python and HTTP fallback failed for ${datasetId}: ${httpErr}`));
+          }
+        }
+      });
+      
+      pythonProcess.on('error', async (err) => {
+        if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
+        console.warn(`Python executable not found (${err.message}). Falling back to Node HTTP HF Datasets API...`);
+        try {
+          await this.downloadDatasetHttp(datasetId, outputPath);
+          resolve(outputPath);
+        } catch (httpErr) {
+          reject(new Error(`Both Python and HTTP fallback failed for ${datasetId}: ${httpErr}`));
         }
       });
     });
+  }
+
+  /**
+   * Fallback using HuggingFace Datasets Server REST API.
+   */
+  private async downloadDatasetHttp(datasetId: string, outputPath: string): Promise<void> {
+    console.log(`[HTTP Fallback] Fetching ${datasetId} via HuggingFace Datasets Server API...`);
+    const limit = 500; // Cap at 500 for local testing to avoid massive downloads
+    let offset = 0;
+    const batchSize = 100;
+    
+    fs.writeFileSync(outputPath, '', 'utf-8'); // clear file
+    
+    while (offset < limit) {
+      const url = `https://datasets-server.huggingface.co/rows?dataset=${datasetId}&config=default&split=train&offset=${offset}&length=${batchSize}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        if (offset === 0) throw new Error(`Failed to fetch ${datasetId}: ${res.status} ${res.statusText}`);
+        break; // Reached end of dataset before limit
+      }
+      
+      const data = await res.json() as { rows: any[] };
+      if (!data.rows || data.rows.length === 0) break;
+      
+      for (const item of data.rows) {
+        fs.appendFileSync(outputPath, JSON.stringify(item.row) + '\n', 'utf-8');
+      }
+      
+      offset += data.rows.length;
+      console.log(`[HTTP] Downloaded ${offset} rows for ${datasetId}...`);
+      if (data.rows.length < batchSize) break; // End of dataset
+    }
   }
 }
