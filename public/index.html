@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireMe.ai | ATS Optimizer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>HireMe.ai</h1>
+      <p>Autonomous ATS Resume Optimization</p>
+    </header>
+
+    <main class="split-layout">
+      <!-- LEFT PANE: Inputs -->
+      <section class="pane input-pane">
+        <div class="input-group">
+          <label for="job-description">Job Description</label>
+          <textarea id="job-description" placeholder="Paste the target job description here..."></textarea>
+        </div>
+        
+        <div class="input-group">
+          <label for="current-resume">Current Resume</label>
+          <textarea id="current-resume" placeholder="Paste your raw, unformatted resume here..."></textarea>
+        </div>
+
+        <button id="optimize-btn" class="primary-btn">
+          <span class="btn-text">Optimize Resume</span>
+          <span class="loader hidden"></span>
+        </button>
+        
+        <div id="error-message" class="error-banner hidden"></div>
+      </section>
+
+      <!-- RIGHT PANE: Outputs -->
+      <section class="pane output-pane">
+        <div class="score-container hidden" id="score-container">
+          <div class="score-ring">
+            <span id="ats-score">0</span><span class="percent">%</span>
+          </div>
+          <p>ATS Match Score</p>
+        </div>
+
+        <div class="output-group hidden" id="output-group">
+          <label>Optimized Resume</label>
+          <div id="optimized-output" class="output-text"></div>
+        </div>
+        
+        <div id="empty-state" class="empty-state">
+          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <p>Ready to optimize.</p>
+          <p class="subtext">Awaiting input data.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
