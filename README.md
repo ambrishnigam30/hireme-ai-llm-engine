@@ -1,6 +1,6 @@
 # HireMe.ai - LLM & ATS Optimizer
 
-## Elevator Pitch
+## What it is
 **HireMe.ai** is not just an API wrapper around OpenAI. It is a completely custom, from-scratch Decoder-only Transformer model built entirely in TypeScript. The product specifically solves the massive UX problem of Applicant Tracking System (ATS) rejection by natively embedding the LLM with ATS scoring logic. It intelligently restructures raw, messy resumes against strict Job Descriptions using hyper-optimized, autonomous text generation.
 
 ---
